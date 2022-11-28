@@ -32,6 +32,8 @@ import pyglet
 import sys
 from playsound import playsound
 import argparse
+import time
+from pysinewave import SineWave
 
 from pythonosc import osc_server
 from pythonosc import dispatcher
@@ -121,6 +123,16 @@ def on_receive_connection_2(address, args, ip):
     player_2_ip = ip
     client_2 = udp_client.SimpleUDPClient(player_2_ip, player_2_port)
     print("> player 2 connected: " + ip)
+
+#------------------------------------------------------------#
+# STARTING MY CODE FOR THE AUDIO OUTPUT TO KNOW WHERE THE BALL IS
+#------------------------------------------------------------#
+
+
+
+
+
+#------------------------------------------------------------#
 
 dispatcher_1 = dispatcher.Dispatcher()
 dispatcher_1.map("/p", on_receive_paddle_1, "p")
@@ -263,7 +275,7 @@ def sense_microphone():
     while not quit:
         data = stream.read(1024,exception_on_overflow=False)
         samples = num.fromstring(data,
-            dtype=aubio.float_type)
+            dtype=aubio.float_type) 
 
         # Compute the pitch of the microphone input
         pitch = pDetection(samples)[0]
@@ -272,6 +284,19 @@ def sense_microphone():
         # Format the volume output so that at most
         # it has six decimal numbers.
         volume = "{:.6f}".format(volume)
+        #-----------------------------------------------#
+
+        # PITCH 200-500 IDEALLY
+        # controller range 1-450
+        if float(volume) > .001 :
+            paddle_pos = 450 - (pitch - 200)
+            if pitch > 650 :
+                paddle_pos = 450
+            if pitch < 200 :
+                paddle_pos = 0
+            client.send_message('/p', paddle_pos)
+
+        # DIRECTIONS ARE CORRECT. NEED TO REFINE 
 
         # uncomment these lines if you want pitch or volume
         if debug:
@@ -687,7 +712,7 @@ if mode == 'player':
       
       # this is how client send messages to server
       # send paddle position 200 (it should be between 0 - 450):
-      #     
+      # client.send_message('/p', 200)
       # set level to 3:
       # client.send_message('/l', 3)
       # start the game:
