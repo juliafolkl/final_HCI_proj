@@ -242,6 +242,12 @@ def listen_to_speech():
             # if recognizing quit and exit then exit the program
             if recog_results == "play" or recog_results == "start":
                 client.send_message('/g', 1)
+            if recog_results == "easy" or recog_results == "ease" or recog_results == "level one":
+                client.send_message('/l', 1)
+            if recog_results == "hard" or recog_results == "level two":
+                client.send_message('/l', 2)
+            if recog_results == "insane" or recog_results == "level three":
+                client.send_message('/l', 3)
         except sr.UnknownValueError:
             print("[speech recognition] Google Speech Recognition could not understand audio")
         except sr.RequestError as e:
@@ -681,7 +687,7 @@ if mode == 'player':
       
       # this is how client send messages to server
       # send paddle position 200 (it should be between 0 - 450):
-      # client.send_message('/p', 200)
+      #     
       # set level to 3:
       # client.send_message('/l', 3)
       # start the game:
