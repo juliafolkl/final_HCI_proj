@@ -33,6 +33,7 @@ import sys
 from playsound import playsound
 import argparse
 import time
+import pysinewave
 from pysinewave import SineWave
 
 from pythonosc import osc_server
@@ -89,6 +90,14 @@ if __name__ == '__main__' :
 client_1 = None
 client_2 = None
 
+first_time = None
+second_time = None
+
+ball_x_coord = None
+ball_y_coord = None
+
+sinewave = SineWave(pitch = 0, pitch_per_second = 10, decibels_per_second=10)
+
 # functions receiving messages from players (game control etc)
 def on_receive_game_level(address, args, l):
     global level
@@ -101,6 +110,7 @@ def on_receive_game_level(address, args, l):
 def on_receive_game_start(address, args, g):
     global game_start
     game_start = g
+
 
 def on_receive_paddle_1(address, args, paddle):
     global paddle_1
@@ -127,7 +137,9 @@ def on_receive_connection_2(address, args, ip):
 #------------------------------------------------------------#
 # STARTING MY CODE FOR THE AUDIO OUTPUT TO KNOW WHERE THE BALL IS
 #------------------------------------------------------------#
-
+def outputting_audio():
+    
+    pass
 
 
 
@@ -151,34 +163,77 @@ dispatcher_2.map("/c", on_receive_connection_2, "c")
 # TODO: add audio output here so that you can play the game eyes-free
 # -------------------------------------#
 #play some fun sounds?
+#
+# IDEA: RECORD SOUNDS FOR "THE GAME IS STARTING IN THREE, TWO, ONE.."
+# OR TOP, BOTTOM, LEFT, RIGHT
+# MISS, HIT
+#
 def hit():
     playsound('hit.wav', False)
+
+def reset_pitch():
+    global sinewave
+    # 200 - 425
+    sinewave.set_frequency(425 - (ball_y_coord / 2))
 
 # used to send messages to host
 if mode == 'player':
     client = udp_client.SimpleUDPClient(host_ip, host_port)
     print("> connected to server at "+host_ip+":"+str(host_port))
+    sinewave.play()
 
 # functions receiving messages from host
 def on_receive_ball(address, *args):
     print("> ball position: (" + str(args[0]) + ", " + str(args[1]) + ")")
+    global ball_x_coord
+    global ball_y_coord
+    ball_x_coord = args[0]
+    ball_y_coord = args[1]
+    reset_pitch()
+    pass
+
+def on_receive_volumes(address, *args):
+    print("\n\n\n VOLUME SENT")
+    relative_vol = args[0]
+    # convert to range 0-10
+    sinewave.set_volume((relative_vol/18.5)-10)
     pass
 
 def on_receive_paddle(address, *args):
     print("> paddle position: (" + str(args[0]) + ", " + str(args[1]) + ")")
+    
     pass
 
 def on_receive_hitpaddle(address, *args):
-    # example sound
-    hit()
+    # NEW SIN WAVE CALCULATED FOR THE NEXT LINE
+    print("\n In receive_hitpaddle, Ball is at:")
+    print(ball_x_coord)
+    print("\n\n\n")
+    if ball_x_coord < 100:
+        playsound('left.wav', False)
+    else :
+        playsound('right.wav', False)
     print("> ball hit at paddle " + str(args[0]) )
+    # print("\n\n\n\n" + str(time.clock_gettime(time.CLOCK_REALTIME)) + "\n\n\n\n")
 
 def on_receive_ballout(address, *args):
     print("> ball went out on left/right side: " + str(args[0]) )
+    playsound('aww.wav', False)
+    sinewave.stop()
+    reset_pitch()
+    sinewave.play()
+    #print("\n\n\n\n" + str(time.clock_gettime(time.CLOCK_REALTIME)) + "\n\n\n\n")
 
 def on_receive_ballbounce(address, *args):
-    # example sound
-    hit()
+    # SINE WAVE IS RECALCULATED TO REFLECT BOUNCING AND MEASURED 
+    # TO LAST LONG ENOUGH TO LAST UNTIL THE NEXT HIT
+    global sinewave
+    if ball_y_coord < 50:
+        playsound('top.wav', False)
+        #sinewave.set_pitch(10)
+    else :
+        playsound('bottom.wav', False)
+        #sinewave.set_pitch(110)
     print("> ball bounced on up/down side: " + str(args[0]) )
 
 def on_receive_scores(address, *args):
@@ -195,6 +250,8 @@ dispatcher_player.map("/ballbounce", on_receive_ballbounce)
 dispatcher_player.map("/hitpaddle", on_receive_hitpaddle)
 dispatcher_player.map("/scores", on_receive_scores)
 dispatcher_player.map("/level", on_receive_level)
+
+dispatcher_player.map("/volume", on_receive_volumes)
 # -------------------------------------#
 
 # Player: speech recognition library
@@ -251,6 +308,9 @@ def listen_to_speech():
             # instead of `r.recognize_google(audio)`
             recog_results = r.recognize_google(audio)
             print("[speech recognition] Google Speech Recognition thinks you said \"" + recog_results + "\"")
+            #-----------------------------------------------#
+            # MY CODE
+            #-----------------------------------------------#
             # if recognizing quit and exit then exit the program
             if recog_results == "play" or recog_results == "start":
                 client.send_message('/g', 1)
@@ -284,12 +344,15 @@ def sense_microphone():
         # Format the volume output so that at most
         # it has six decimal numbers.
         volume = "{:.6f}".format(volume)
-        #-----------------------------------------------#
 
+        #-----------------------------------------------#
+        # MY CODE
+        #-----------------------------------------------#
         # PITCH 200-500 IDEALLY
         # controller range 1-450
         if float(volume) > .001 :
-            paddle_pos = 450 - (pitch - 200)
+            # pitch range 200-425
+            paddle_pos = 450 - ((pitch*2) - 400)
             if pitch > 650 :
                 paddle_pos = 450
             if pitch < 200 :
@@ -477,8 +540,11 @@ class Model(object):
         self.check_if_paddled()
         if (client_1 != None):
             client_1.send_message("/ball", [b.x, b.y])
+            client_1.send_message("/volume", 739 - b.x) # volume is 0 when ball 
+                                                        # is at right end, 738
         if (client_2 != None):
             client_2.send_message("/ball", [b.x, b.y])
+            client_2.send_message("/volume", b.x)
 
     def toggle_menu(self):
         global game_start
