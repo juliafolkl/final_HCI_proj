@@ -33,6 +33,7 @@ import sys
 from playsound import playsound
 import argparse
 import pysinewave
+import time
 from pysinewave import SineWave
 
 from pythonosc import osc_server
@@ -175,6 +176,49 @@ def reset_pitch():
     # 200 - 425
     sinewave.set_frequency(425 - (ball_y_coord / 2))
 
+def read_score(score1, score2):
+    if score1 == 0:
+        playsound('0.wav', False)
+    elif score1 == 1:
+        playsound('1.wav', False)
+    elif score1 == 2:
+        playsound('2.wav', False)
+    elif score1 == 3:
+        playsound('3.wav', False)
+    elif score1 == 4:
+        playsound('4.wav', False)
+    elif score1 == 5:
+        playsound('5.wav', False)
+    elif score1 == 6:
+        playsound('6.wav', False)
+    elif score1 == 7:
+        playsound('7.wav', False)
+    elif score1 == 8:
+        playsound('8.wav', False)
+    else:
+        playsound('9.wav', False)
+    time.sleep(1)
+    if score2 == 0:
+        playsound('0.wav', False)
+    elif score2 == 1:
+        playsound('1.wav', False)
+    elif score2 == 2:
+        playsound('2.wav', False)
+    elif score2 == 3:
+        playsound('3.wav', False)
+    elif score2 == 4:
+        playsound('4.wav', False)
+    elif score2 == 5:
+        playsound('5.wav', False)
+    elif score2 == 6:
+        playsound('6.wav', False)
+    elif score2 == 7:
+        playsound('7.wav', False)
+    elif score2 == 8:
+        playsound('8.wav', False)
+    else:
+        playsound('9.wav', False)
+
 # used to send messages to host
 if mode == 'player':
     client = udp_client.SimpleUDPClient(host_ip, host_port)
@@ -236,6 +280,7 @@ def on_receive_ballbounce(address, *args):
     print("> ball bounced on up/down side: " + str(args[0]) )
 
 def on_receive_scores(address, *args):
+    read_score(args[0], args[1])
     print("> scores now: " + str(args[0]) + " vs. " + str(args[1]))
 
 def on_receive_level(address, *args):
@@ -313,6 +358,8 @@ def listen_to_speech():
             # if recognizing quit and exit then exit the program
             if recog_results == "play" or recog_results == "start":
                 client.send_message('/g', 1)
+            if recog_results == "pause" or recog_results == "stop":
+                client.send_message('/g', 0)
             if recog_results == "easy" or recog_results == "ease" or recog_results == "level one":
                 client.send_message('/l', 1)
             if recog_results == "hard" or recog_results == "level two":
