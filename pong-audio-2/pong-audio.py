@@ -349,12 +349,12 @@ def sense_microphone():
         #-----------------------------------------------#
         # PITCH 200-500 IDEALLY
         # controller range 1-450
-        if float(volume) > .001 :
+        if float(volume) > .0008 :
             # pitch range 200-425
             paddle_pos = 450 - ((pitch*2) - 400)
-            if pitch > 650 :
+            if paddle_pos > 450 :
                 paddle_pos = 450
-            if pitch < 200 :
+            if paddle_pos < 0 :
                 paddle_pos = 0
             client.send_message('/p', paddle_pos)
 
