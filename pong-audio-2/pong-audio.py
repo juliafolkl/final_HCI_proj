@@ -95,7 +95,7 @@ second_time = None
 ball_x_coord = None
 ball_y_coord = None
 
-sinewave = SineWave(pitch = 0, pitch_per_second = 15, decibels_per_second=10)
+sinewave = SineWave(pitch = 0, pitch_per_second = 30, decibels_per_second=10)
 
 # functions receiving messages from players (game control etc)
 def on_receive_game_level(address, args, l):
