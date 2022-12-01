@@ -227,7 +227,7 @@ if mode == 'player':
 
 # functions receiving messages from host
 def on_receive_ball(address, *args):
-    print("> ball position: (" + str(args[0]) + ", " + str(args[1]) + ")")
+    #print("> ball position: (" + str(args[0]) + ", " + str(args[1]) + ")")
     global ball_x_coord
     global ball_y_coord
     ball_x_coord = args[0]
@@ -236,22 +236,18 @@ def on_receive_ball(address, *args):
     pass
 
 def on_receive_volumes(address, *args):
-    print("\n\n\n VOLUME SENT")
     relative_vol = args[0]
     # convert to range 0-10
     sinewave.set_volume((relative_vol/18.5)-15)
     pass
 
 def on_receive_paddle(address, *args):
-    print("> paddle position: (" + str(args[0]) + ", " + str(args[1]) + ")")
+    #print("> paddle position: (" + str(args[0]) + ", " + str(args[1]) + ")")
     
     pass
 
 def on_receive_hitpaddle(address, *args):
     # NEW SIN WAVE CALCULATED FOR THE NEXT LINE
-    print("\n In receive_hitpaddle, Ball is at:")
-    print(ball_x_coord)
-    print("\n\n\n")
     if ball_x_coord < 100:
         playsound('left.wav', False)
     else :
@@ -281,7 +277,7 @@ def on_receive_ballbounce(address, *args):
 
 def on_receive_scores(address, *args):
     read_score(args[0], args[1])
-    print("> scores now: " + str(args[0]) + " vs. " + str(args[1]))
+    print(">\n\n\n scores now: " + str(args[0]) + " vs. " + str(args[1]))
 
 def on_receive_level(address, *args):
     print("> level now: " + str(args[0]))
