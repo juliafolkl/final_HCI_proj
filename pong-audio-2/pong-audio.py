@@ -32,7 +32,6 @@ import pyglet
 import sys
 from playsound import playsound
 import argparse
-import time
 import pysinewave
 from pysinewave import SineWave
 
@@ -96,7 +95,7 @@ second_time = None
 ball_x_coord = None
 ball_y_coord = None
 
-sinewave = SineWave(pitch = 0, pitch_per_second = 10, decibels_per_second=10)
+sinewave = SineWave(pitch = 0, pitch_per_second = 15, decibels_per_second=10)
 
 # functions receiving messages from players (game control etc)
 def on_receive_game_level(address, args, l):
@@ -196,7 +195,7 @@ def on_receive_volumes(address, *args):
     print("\n\n\n VOLUME SENT")
     relative_vol = args[0]
     # convert to range 0-10
-    sinewave.set_volume((relative_vol/18.5)-10)
+    sinewave.set_volume((relative_vol/18.5)-15)
     pass
 
 def on_receive_paddle(address, *args):
